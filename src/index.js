@@ -1,5 +1,6 @@
 const path = require('path')
 const express = require('express')
+const compression = require('compression')
 const history = require('connect-history-api-fallback')
 const { SERVER_PORT } = require('./_helpers/secret')
 
@@ -13,13 +14,17 @@ const historyModeMiddleware = history({
   disableDotRule: true
 })
 
-const staticFileMiddleware = express.static(resolve('../public'))
+// 静态文件
+// https://stackoverflow.com/questions/44608042/express-static-server-cache-control-with-max-age-0-must-revalidate
+const staticFileMiddleware = express.static(resolve('../public'), {
+  maxAge: 1000 * 60 * 60 * 24 * 30
+})
 
+app.use(compression())
 // https://github.com/bripkens/connect-history-api-fallback/tree/master/examples/static-files-and-index-rewrite#configuring-the-middleware
 app.use(staticFileMiddleware)
 app.use(historyModeMiddleware)
 app.use(staticFileMiddleware)
-// app.use('/', express.static(resolve('../public')))
 
 app.get('/', function (req, res) {
   res.render(resolve('../public/index.html'))
